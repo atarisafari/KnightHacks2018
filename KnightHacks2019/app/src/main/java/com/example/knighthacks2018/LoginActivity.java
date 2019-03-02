@@ -17,7 +17,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-
 public class LoginActivity extends AppCompatActivity{
 
     private Button login, signup;
@@ -36,13 +35,12 @@ public class LoginActivity extends AppCompatActivity{
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
                 if(user != null)
                 {
-                    /*Intent intent = new Intent(LoginActivity.this,.class);
+                    Intent intent = new Intent(LoginActivity.this,DriverMapActivity.class);
                     startActivity(intent);
                     finish();
-                    return;*/
+                    return;
                 }
             }
         };
@@ -59,15 +57,30 @@ public class LoginActivity extends AppCompatActivity{
             {
                 final String email = username.getText().toString();
                 final String pass = password.getText().toString();
-                mAuth.signInWithEmailAndPassword(email,pass).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>()
+
+                if(email == null || email.isEmpty() || pass == null || pass.isEmpty())
                 {
+                    Toast.makeText(LoginActivity.this, "Please enter an email and password", Toast.LENGTH_SHORT).show();
+                }
 
-                    public void onComplete(@NonNull Task<AuthResult> task)
-                    {
+                else {
+                    mAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
 
-                    }
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (!task.isSuccessful()) {
+                                Toast.makeText(LoginActivity.this, "Login Error :(", Toast.LENGTH_SHORT).show();
+                            }
 
-                });
+                            {
+                                String userID = mAuth.getCurrentUser().getUid();
+                                DatabaseReference currentUserDB = FirebaseDatabase.getInstance().getReference().child("Users").child(userID);
+                                currentUserDB.setValue(true);
+                                Toast.makeText(LoginActivity.this, "This is working", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                    });
+                }
             }
 
         });
@@ -79,25 +92,26 @@ public class LoginActivity extends AppCompatActivity{
             {
                 final String email = username.getText().toString();
                 final String pass = password.getText().toString();
-                mAuth.createUserWithEmailAndPassword(email,pass).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                if(email == null || email.isEmpty() || pass == null || pass.isEmpty())
+                {
+                    Toast.makeText(LoginActivity.this, "Please enter an email and password", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    mAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
 
-                    public void onComplete(@NonNull Task<AuthResult> task)
-                    {
-                        if(!task.isSuccessful())
-                        {
-                            Toast.makeText(LoginActivity.this, "Registration Error :(", Toast.LENGTH_SHORT).show();
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (!task.isSuccessful()) {
+                                Toast.makeText(LoginActivity.this, "Registration Error :(", Toast.LENGTH_SHORT).show();
+                            } else {
+                                String userID = mAuth.getCurrentUser().getUid();
+                                DatabaseReference currentUserDB = FirebaseDatabase.getInstance().getReference().child("Users").child(userID);
+                                currentUserDB.setValue(true);
+                            }
+
                         }
 
-                        else
-                        {
-                            String userID = mAuth.getCurrentUser().getUid();
-                            DatabaseReference currentUserDB = FirebaseDatabase.getInstance().getReference().child("Users").child(userID);
-                            currentUserDB.setValue(true);
-                        }
-
-                    }
-
-                });
+                    });
+                }
 
             }
 
